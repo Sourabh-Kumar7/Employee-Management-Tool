@@ -19,6 +19,8 @@ public class ListingPage extends JFrame{
     private JTextField idSearchQuery;
     private JTextField nameSearchQuery;
     private JButton search;
+    private JTextField levelSearchQuery;
+    private JTextField positionSearchQuery;
 
     Registration_form regForm = new Registration_form();
     EmployeeDetailPage empDetail = new EmployeeDetailPage();
@@ -26,20 +28,7 @@ public class ListingPage extends JFrame{
     DataStore dStore;
 
     public ListingPage() {
-        String[][] data = {
-                { "Kundan Kumar Jha", "4031"},
-                { "Anand Jha", "6014" }
-        };
-
-        // Column Names
-        String[] columnNames = { "ID", "Name"};
-
-        // Initializing the JTable
-//        table1 = new JTable(data, columnNames);
-//        table1.setBounds(30,40,200,300);
-
         dStore = DataStore.getDataStoreInstance();
-        //updateList();
         AddNewEmp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -65,30 +54,45 @@ public class ListingPage extends JFrame{
                 if(Objects.isNull(e)){
                     return;
                 }
-
-                empDetail.setContentPane(empDetail.employeeDetailPg);
-                empDetail.setTitle("Employee Details");
-                empDetail.setSize(800,600);
-                empDetail.setVisible(true);
-                empDetail.setData(e);
+                showEmpDetails(e);
             }
         });
     }
 
-    private void updateList(){
+    private void showEmpDetails(Employee e) {
+        empDetail.setContentPane(empDetail.employeeDetailPg);
+        empDetail.setTitle("Employee Detail");
+        empDetail.setSize(800,600);
+        empDetail.setVisible(true);
+        empDetail.setData(e);
+        empDetail.setCallBack(this::updateList);
+    }
+
+    public void updateList(){
 
         String idSearchQry = idSearchQuery.getText();
         String nameSearchQry = nameSearchQuery.getText();
+        String levelSearchQry = levelSearchQuery.getText();
+        String positionSearchQry = positionSearchQuery.getText();
 
-        String[] columnNames = { "ID", "Name"};
+        String[] columnNames = { "ID", "Name", "Level", "Position"};
         List<Employee> empList = dStore.getRecords().stream().filter(employee ->
-            employee.getId().contains(idSearchQry)
-        ).filter(employee -> employee.getName().contains(nameSearchQry)).collect(Collectors.toList());
+                employee.getId().contains(idSearchQry)).filter(employee ->
+                employee.getName().contains(nameSearchQry)).filter(employee ->
+                employee.getLevel().contains(levelSearchQry)).filter(employee ->
+                employee.getPosition().contains(positionSearchQry)).collect(Collectors.toList());
         System.out.println(empList.size());
-        DefaultTableModel model = new DefaultTableModel(columnNames,0);
+        DefaultTableModel model = new DefaultTableModel(columnNames,0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                //all cells false
+                return false;
+            }
+        };
+
         for(int i=0;i<empList.size();i++){
             Employee emp = empList.get(i);
-            Object[] row = { emp.getId(), emp.getName()};
+            Object[] row = { emp.getId(), emp.getName(), emp.getLevel(), emp.getPosition()};
             model.addRow(row);
         }
         table1.setModel(model);
@@ -97,9 +101,10 @@ public class ListingPage extends JFrame{
     public void registerNewUser()
     {
         regForm.setContentPane(regForm.EmployeeRegForm);
-        regForm.setTitle("Main App");
+        regForm.setTitle("Registration Form");
         regForm.setSize(600,400);
         regForm.setVisible(true);
+        regForm.setCallBack(this::updateList);
     }
 
     public static void main(String[] args){
