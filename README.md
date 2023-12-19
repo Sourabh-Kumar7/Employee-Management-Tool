@@ -36,7 +36,7 @@ Steps
 
 # For any queries
 
-snehagiranje05@gmail.com
+sourabh7.tech@gmail.com
 
 
 
